@@ -6,34 +6,56 @@ import styles from "@/app/components/map.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationCrosshairs } from "@fortawesome/free-solid-svg-icons";
 
-const
-  trad_fare = 13,
-  mod_fare = 15;
+import Notes from '@/app/components/notes'
+
 
 export default function App() {
+  // Set useState
+
+  const [ costs, setCosts ] = useState([])
+  const [ standTrad, setStandTrad ] = useState(0)
+  const [ standMod, setStandMod ] = useState(0)
+  const [ discTrad, setDiscTrad ] = useState(0)
+  const [ discMod, setDiscMod ] = useState(0)
+  const [ location, setLocation ] = useState(0)
+  const [ metrics, setMetrics ] = useState(0)
+  const [ center, setCenter ] = useState({ lat: 10.332615673533242, lng: 123.90974285444454 })
+  const [ zoom, setZoom ] = useState(13)
+  const [ routes, setRoutes ] = useState('')
+  const [directionsResponse, setDirectionsResponse] = useState(null);
+  const [distance, setDistance] = useState("");
+  const [duration, setDuration] = useState("");
+  const [map, setMap] = useState(/** @type google.maps.Map */ (null));
+  const [ notesOpen, setNotesOpen ] = useState(false)
+
+  // Others
+
+  const cebuBounds = {
+    north: 10.3597,
+    south: 10.2257,
+    east: 123.9227,
+    west: 123.8001,
+  };
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyBF8tm3ds5kJQ7l7VbQcqWQQZkUy1AFgKM",
     libraries: ["places"],
   });
 
-  const [ center, setCenter ] = useState({ lat: 10.332615673533242, lng: 123.90974285444454 })
+  // Set useEffect
 
-  const [ zoom, setZoom ] = useState(13)
-
-  // For getting location
-
-  const [ location, setLocation ] = useState(0)
-
-  const [ metrics, setMetrics ] = useState(0)
-
-  const geocoder = useRef(null)
-
-  const [ routes, setRoutes ] = useState('')
-
-  const [ standTrad, setStandTrad ] = useState(0)
-  const [ standMod, setStandMod ] = useState(0)
-  const [ discTrad, setDiscTrad ] = useState(0)
-  const [ discMod, setDiscMod ] = useState(0)
+  useEffect(() => {
+    const fetchCost = async () => {
+      try {
+        const res = await fetch('/api/get-cost')
+        const result = await res.json()
+        setCosts(result)
+      } catch(error) {
+        console.error(error)
+      }
+    }
+    fetchCost()
+  }, [])
 
   useEffect(() => {
     if (isLoaded) {
@@ -41,7 +63,14 @@ export default function App() {
     }
   }, [isLoaded])
 
-  const getLoc = async () => {
+  // Set useRef
+  const geocoder = useRef(null)
+  const originRef = useRef();
+  const destiantionRef = useRef();
+
+  // Set Functions
+
+  async function getLoc(){
     try {
       const position = await new Promise((resolve, reject) => {
         if (navigator.geolocation) {
@@ -65,20 +94,6 @@ export default function App() {
     }
   }
 
-  const [map, setMap] = useState(/** @type google.maps.Map */ (null));
-  const [directionsResponse, setDirectionsResponse] = useState(null);
-  const [distance, setDistance] = useState("");
-  const [duration, setDuration] = useState("");
-
-  /** @type React.MutableRefObject<HTMLInputElement> */
-  const originRef = useRef();
-  /** @type React.MutableRefObject<HTMLInputElement> */
-  const destiantionRef = useRef();
-
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
-
   async function calculateRoute() {
     if (originRef.current.value === "" || destiantionRef.current.value === "") {
       return;
@@ -94,12 +109,11 @@ export default function App() {
     setRoutes(' ')
     setLocation(0)
     setMetrics(1)
+    setNotesOpen(false)
 
     setDirectionsResponse(results)
     setDistance(results.routes[0].legs[0].distance.text)
     setDuration(results.routes[0].legs[0].duration.text)
-
-    console.log(results)
 
     let route_codes = ''
     let standard_trad = 0, standard_modern = 0
@@ -112,11 +126,12 @@ export default function App() {
         if (e.transit.line.short_name === undefined) {
           route_codes = route_codes + 'CERES BUS'
         } else {
+          pushRoute(e.transit.line.short_name)
           route_codes = route_codes + e.transit.line.short_name + ' '
         }
         const dist = e.distance.value / 1000
-        standard_trad = standard_trad + trad_fare + (Math.max(dist - 4, 0) * 2)
-        standard_modern = standard_modern + mod_fare + (Math.max(dist - 4, 0) * 2)
+        standard_trad = standard_trad + costs[0].initprice + (Math.max(dist - 4, 0) * costs[0].priceperkm)
+        standard_modern = standard_modern + costs[1].initprice + (Math.max(dist - 4, 0) * costs[1].priceperkm)
       }
     })
 
@@ -135,16 +150,26 @@ export default function App() {
     setDuration("");
     setLocation(0)
     setMetrics(0)
+    setNotesOpen(false)
     originRef.current.value = "";
     destiantionRef.current.value = "";
   }
 
-  const cebuBounds = {
-    north: 10.3597,
-    south: 10.2257,
-    east: 123.9227,
-    west: 123.8001,
-  };
+  async function pushRoute(data){
+    try{
+      const res = await fetch('/api/update-route',{
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className={styles.container}>
@@ -248,6 +273,9 @@ export default function App() {
             </div>
           </div>
         </div>
+      </div>
+      <div className={notesOpen == true ? styles.overlay2 : styles.hide}>
+        <Notes routeCodes={routes} />
       </div>
       <div className={styles.mapContainer}>
         {/* Google Map Box */}

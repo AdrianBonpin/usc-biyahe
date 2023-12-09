@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:@localhost:3306/biyahedb"
+}
+
+model puv {
+  puvID      Int    @id @default(autoincrement())
+  type       String @db.VarChar(16)
+  initprice  Float  @db.Float
+  priceperkm Float  @db.Float
+}
+
+model route {
+  routeID    Int          @id @default(autoincrement())
+  routeCode  String       @db.VarChar(32)
+  type       String       @db.VarChar(16)
+  routenotes routenotes[]
+}
+
+model routenotes {
+  noteID  Int    @id @default(autoincrement())
+  routeID Int?
+  userID  Int
+  content String @db.VarChar(256)
+  route   route? @relation(fields: [routeID], references: [routeID], onDelete: Restrict, onUpdate: Restrict, map: "routenotes_ibfk_1")
+  user    user   @relation(fields: [userID], references: [userID], onUpdate: Restrict, map: "routenotes_ibfk_2")
+
+  @@index([routeID], map: "routeID")
+  @@index([userID], map: "userID")
+}
+
+model user {
+  userID     Int          @id @default(autoincrement())
+  username   String       @db.VarChar(32)
+  email      String       @db.VarChar(32)
+  password   String       @db.VarChar(100)
+  auth       Int
+  routenotes routenotes[]
+}

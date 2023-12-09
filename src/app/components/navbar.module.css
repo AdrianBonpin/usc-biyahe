@@ -88,6 +88,14 @@
   opacity: 60%;
 }
 
+.Login *{
+  color: var(--background)
+}
+
+.hide {
+  display: none;
+}
+
 /* Non-responsive styles */
 
 /* Responsive styles */

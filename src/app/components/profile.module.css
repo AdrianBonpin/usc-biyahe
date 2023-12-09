@@ -1,18 +1,6 @@
-.login_bg {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    position: fixed;
-    z-index: 3;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.45);
-}
-
 .login_box {
     width: 20em;
-    height: 25em;
+    height: 80%;
     display: flex;
     position: fixed;
     top: 50%;
@@ -23,6 +11,20 @@
 
     display: flex;
     flex-direction: column;
+}
+
+.notes_box {
+    width: 90%;
+    height: 10em;
+    background: var(--secondary);
+    border-radius: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: .5em;
 }
 
 .box_close {
@@ -55,8 +57,7 @@
     opacity: 60%;
 }
 
-.signIn,
-.signUp {
+.cont {
     display: flex;
     padding: .6em;
 
@@ -70,7 +71,7 @@
 
 .maintxt {
     margin-bottom: .5em;
-    font-size: 2em;
+    font-size: 1.5em;
     font-weight: bold;
 }
 
@@ -117,7 +118,7 @@
     opacity: 60%;
 }
 
-.form_button {
+.button {
     cursor: pointer;
     width: 90%;
     font-size: 1em;
@@ -130,11 +131,39 @@
     transition: opacity ease 300ms;
 }
 
-.form_button:hover {
+.button:hover {
+    opacity: 60%;
+}
+
+.button2 {
+    cursor: pointer;
+    width: 90%;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 6px;
+    color: var(--input_bg);
+    background: var(--error);
+    margin: .6em 0 .4em 0;
+
+    transition: opacity ease 300ms;
+}
+
+.button2:hover {
     opacity: 60%;
 }
 
 .warn {
     font-size: .6em;
     color: var(--error)
+}
+
+.persona_notes {
+    resize: none;
+    width: 90%;
+    height: 90%;
+    background: var(--input_bg);
+    color: var(--input_txt);
+    border-radius: 10px;
+    padding: .4em;
+    border: none;
 }

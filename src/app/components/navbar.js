@@ -1,25 +1,13 @@
-"use client"
-
-import Link from "next/link"
 import styles from "@/app/components/navbar.module.css"
 import Image from "next/image"
-import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
+import LoginButton from '@/app/components/loginButton'
+import LogoutButton from '@/app/components/logoutButton'
+import NavLinks from '@/app/components/navlinks'
+import { getServerSession } from 'next-auth'
 
-import Login from '@/app/components/login'
+export default async function Dash() {
 
-export default function Dash({ setFrom, setTo }) {
-  const pathname = usePathname();
-
-  const chkPage = (href) => {
-    return pathname === href ? styles.current : styles.Link;
-  };
-
-  const [ loginOpen, setLoginOpen ] = useState(false)
-
-  function handleCloseLogin(){
-    setLoginOpen(false)
-  }
+  const session = await getServerSession()
 
   return (
     <nav className={styles.navbar}>
@@ -33,18 +21,10 @@ export default function Dash({ setFrom, setTo }) {
         />
       </div>
       <div className={styles.links}>
-        <div className={chkPage("/")}>
-          <Link href="/">Routes</Link>
-        </div>
-        <div className={chkPage("/about")}>
-          <Link href="/about">About</Link>
-        </div>
-        <div className={chkPage("/contact")}>
-          <Link href="/contact">Contact</Link>
-        </div>
-        <button className={styles.Login} onClick={() => setLoginOpen(true)}> Login </button>
+        <NavLinks/>
+        {!session ? <LoginButton /> : null}
+        {!!session ? <LogoutButton session={session} /> : null}
       </div>
-      {loginOpen && <Login onClose={handleCloseLogin}/>}
     </nav>
   );
 }

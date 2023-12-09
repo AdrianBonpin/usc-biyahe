@@ -3,11 +3,12 @@ import './globals.css'
 import Providers from './components/providers'
 
 export const metadata = {
-  title: 'biyahe',
+  title: 'Biyahe Cebu',
   description: 'biyahe ta bai!',
 }
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+
   return (
     <html lang="en">
       <body>
